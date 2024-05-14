@@ -35,5 +35,50 @@ LEFT JOIN dept_emp de ON de.emp_no = e.emp_no
 LEFT JOIN departments d ON d.dept_no = de.dept_no OR d.dept_no = dm.dept_no)
 SELECT * FROM cte1 WHERE dept_name = 'Human Resources' AND hire_date > '1986-00-00';
 
+-- Create a statement to delete an employee's record who belongs to the marketing department and whose name starts with 'A'.
+CREATE OR REPLACE TEMPORARY TABLE marketing_dept( 
+SELECT e.emp_no, e.first_name, e.last_name
+FROM employees e
+LEFT JOIN dept_manager de ON e.emp_no = de.emp_no
+LEFT JOIN dept_emp de ON e.emp_no = d.emp_no);
+
+DELETE FROM marketing_dept
+WHERE first_name LIKE 'A%' AND emp_no IN (
+    SELECT emp_no 
+    FROM dept_emp de
+    INNER JOIN departments d ON de.dept_no = d.dept_no
+    WHERE d.dept_name = 'Marketing'
+
+-- Create a database view to list the full names off all departments' managers and their salaries.
+CREATE OR REPLACE VIEW Department_managers AS
+SELECT d.dept_name AS department_name,
+    CONCAT (first_name, ' ', last_name) AS manager_name,
+    MAX (s.salary) AS manager_salary
+FROM departments d
+INNER JOIN employees e ON dm.emp_no = e.emp_no
+RIGHT JOIN salaries s ON e.emp_no = s.emp_no;
+
+-- Create a database view to list all departments and their department managers, who were hired between 1980 and 1990.
+CREATE VIEW department_managers_hire AS
+SELECT d.dept_name AS department_name,
+    CONCAT (e.first_name, ' ', e.last_name) AS manager_name,
+    e.hire_date AS manager_hire_date
+FROM departments d
+INNER JOIN dept_manager dm ON d.dept_no = dm.dept_no
+INNER JOIN employees e ON dm.emp_no = e.emp_no
+WHERE e.hire_date > = '1980-00-00' AND '1990-12-31';
+
+-- Create a statement to increase salaries of all department's managers up to 10% who are working since 1990.
+CREATE OR REPLACE TEMPORARY TABLE empsal_increase3 AS (
+    SELECT e.emp_no e.first_name, e.last_name, e.hire_date, d.ept_no, s.salary
+    FROM employees e 
+    INNER JOIN dept_manager dm ON e.emp = dm.emp_no
+    INNER JOIN departments d ON dm.ept_no = d.dept_no
+    LEFT JOIN salaries s ON e.emp_no = s.emp_no
+    WHERE YEAR (e.hire_date) > = 1990
+    GROUP BY e.emp_no, e.first_name, e.last_name, d.dept_no, s.salaries);
+
+
+
 
 
